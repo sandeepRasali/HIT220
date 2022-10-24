@@ -1,45 +1,27 @@
 import csv
-import math
-from node_modules import numpy as np
-
-size = 50
 
 class CrocMonitor:
-    nodeList =[]
+    def __init__(self):
+        self.node_list = []
 
-    def __init__(self, size):
-        
-        self.nodeList = []
-        self.matrix = [[0 for x in range(size)] for y in range(size)]
-        self.points = []
-        self.readData()
-
-    def readData(self):
+    def read_data(self):
         with open('CrocDataNodes.csv') as f:
             csv_reader = csv.reader(f)
-            index = 0
             next(csv_reader)
+
             for line in csv_reader:
-                
-                node = line[0]
-                x = line[1]
-                y = line[2]
-                sightings = line[4]
-             
-                water = 1
+                node = int(line[0])
+                x = float(line[1])
+                y = float(line[2])
+                water = bool(int(line[3]))
+                sightings = int(line[4])
 
-                if line[3] == "0":
-                    water = 0
-
-                self.nodeList.append([node, x, y, water, sightings]) # etc
-                
-                if not node in self.points:
-                    self.points.append(node)
-
-                index += 1
+                self.node_list.append([node, x, y, water, sightings])
         
         f.close()
+
+        return self.node_list
         
 if __name__ == '__main__':
-    cm = CrocMonitor(size) 
-    print(cm.nodeList)
+    cm = CrocMonitor() 
+    print(cm.read_data())
