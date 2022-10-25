@@ -15,13 +15,13 @@ class Graph:
     def add_edge(self, v1, v2):
         # connect second vertex to first vertex at first vertex's position in vertex list
         node = Node(v2)
-        node.next = self.graph[v1]
-        self.graph[v1] = node
+        node.next = self.graph[v1 - 1]
+        self.graph[v1 - 1] = node
 
         # connect second vertex to first vertex at second vertex's position in vertex list
         node = Node(v1)
-        node.next = self.graph[v2]
-        self.graph[v2] = node
+        node.next = self.graph[v2 - 1]
+        self.graph[v2 - 1] = node
 
 class CrocMonitor:
     def __init__(self):
@@ -52,18 +52,33 @@ class CrocMonitor:
         self.graph = Graph(len(self.node_list))
     
     def display_graph(self):
-        print(self.graph.graph)
+        for i in range(self.graph.vertices):
+            print("Vertex " + str(i + 1) + ":", end = "")
+            temp = self.graph.graph[i] # get node
+            while temp:
+                print(" -> {}".format(temp.data), end = "")
+                temp = temp.next
+            print("\n")
 
 # Driver Code
 if __name__ == '__main__':
     cm = CrocMonitor()
-    
     cm.import_data('CrocDataNodes.csv')
     print("Croc Data:")
     cm.read_data()
 
+    print("\n")
+
     cm.create_graph()
-    print("Croc Graph:")
+    edges = CrocMonitor()
+    edges.import_data('CrocDataEdges.csv')
+
+    for i in range(0, len(edges.node_list)):
+        v1 = int(edges.node_list[i][0])
+        v2 = int(edges.node_list[i][1])
+        cm.graph.add_edge(v1, v2)
+    
+    print("Croc Adjacent List:")
     cm.display_graph()
 
 # Don't Use; this sort might need to be rewritten to work.
