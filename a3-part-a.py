@@ -2,8 +2,9 @@ import csv
 
 # Node Representation
 class Node:
-    def __init__(self, data):
+    def __init__(self, data, weight):
         self.data = data
+        self.weight = weight
         self.next = None
 
 # Graph Representation - Adjacency List
@@ -12,14 +13,14 @@ class Graph:
         self.vertices = vertices # total number of vertices
         self.graph = [None] * self.vertices # vertex list
     
-    def add_edge(self, v1, v2):
+    def add_edge(self, v1, v1_weight, v2, v2_weight):
         # connect second vertex to first vertex at first vertex's position in vertex list
-        node = Node(v2)
+        node = Node(v2, v2_weight)
         node.next = self.graph[v1 - 1]
         self.graph[v1 - 1] = node
 
         # connect second vertex to first vertex at second vertex's position in vertex list
-        node = Node(v1)
+        node = Node(v1, v1_weight)
         node.next = self.graph[v2 - 1]
         self.graph[v2 - 1] = node
 
@@ -54,10 +55,13 @@ class CrocMonitor:
     def display_graph(self):
         for i in range(self.graph.vertices):
             print("Vertex " + str(i + 1) + ":", end = "")
-            temp = self.graph.graph[i] # get node
-            while temp:
-                print(" -> {}".format(temp.data), end = "")
-                temp = temp.next
+
+            vertex = self.graph.graph[i] # get vertex
+
+            while vertex:
+                print(" -> [{}".format(vertex.data) + ", {}]".format(vertex.weight), end = "")
+                vertex = vertex.next
+
             print("\n")
 
 # Driver Code
@@ -76,7 +80,9 @@ if __name__ == '__main__':
     for i in range(0, len(edges.node_list)):
         v1 = int(edges.node_list[i][0])
         v2 = int(edges.node_list[i][1])
-        cm.graph.add_edge(v1, v2)
+        v1_weight = int(cm.node_list[v1 - 1][4])
+        v2_weight = int(cm.node_list[v2 - 1][4])
+        cm.graph.add_edge(v1, v1_weight, v2, v2_weight)
     
     print("Croc Adjacent List:")
     cm.display_graph()
