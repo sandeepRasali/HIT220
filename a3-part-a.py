@@ -1,10 +1,11 @@
 import csv
+import math
 
 # Node Representation
 class Node:
-    def __init__(self, data, weight):
+    def __init__(self, data, weights):
         self.data = data
-        self.weight = weight
+        self.weights = weights
         self.next = None
 
 # Graph Representation - Adjacency List
@@ -13,14 +14,14 @@ class Graph:
         self.vertices = vertices # total number of vertices
         self.graph = [None] * self.vertices # vertex list
     
-    def add_edge(self, v1, v1_weight, v2, v2_weight):
+    def add_edge(self, v1, v1_weights, v2, v2_weights):
         # connect second vertex to first vertex at first vertex's position in vertex list
-        node = Node(v2, v2_weight)
+        node = Node(v2, v2_weights)
         node.next = self.graph[v1 - 1]
         self.graph[v1 - 1] = node
 
         # connect second vertex to first vertex at second vertex's position in vertex list
-        node = Node(v1, v1_weight)
+        node = Node(v1, v1_weights)
         node.next = self.graph[v2 - 1]
         self.graph[v2 - 1] = node
 
@@ -59,7 +60,7 @@ class CrocMonitor:
             vertex = self.graph.graph[i] # get vertex
 
             while vertex:
-                print(" -> [{}".format(vertex.data) + ", {}]".format(vertex.weight), end = "")
+                print(" -> [{}".format(vertex.data) + ", {}]".format(vertex.weights), end = "")
                 vertex = vertex.next
 
             print("\n")
@@ -69,7 +70,7 @@ if __name__ == '__main__':
     cm = CrocMonitor()
     cm.import_data('CrocDataNodes.csv')
     print("Croc Data:")
-    cm.read_data()
+    # cm.read_data()
 
     print("\n")
 
@@ -78,13 +79,25 @@ if __name__ == '__main__':
     edges.import_data('CrocDataEdges.csv')
 
     for i in range(0, len(edges.node_list)):
+        # for creating edges between vertices
         v1 = int(edges.node_list[i][0])
         v2 = int(edges.node_list[i][1])
-        v1_weight = int(cm.node_list[v1 - 1][4])
-        v2_weight = int(cm.node_list[v2 - 1][4])
-        cm.graph.add_edge(v1, v1_weight, v2, v2_weight)
+
+        # for adding distance to edge as weight
+        v1_coordinates = [float(cm.node_list[v1 - 1][1]), float(cm.node_list[v1 - 1][2])]
+        v2_coordinates = [float(cm.node_list[v2 - 1][1]), float(cm.node_list[v2 - 1][2])]
+        distance = round(math.dist(v1_coordinates, v2_coordinates), 1) # calculate the distance and round to one decimal place
+
+        # for adding sightings to edge as weight
+        v1_sightings = int(cm.node_list[v1 - 1][4])
+        v2_sightings = int(cm.node_list[v2 - 1][4])
+
+        # create edges between vertices with weights
+        v1_weights = [distance, v1_sightings]
+        v2_weights = [distance, v2_sightings]
+        cm.graph.add_edge(v1, v1_weights, v2, v2_weights)
     
-    print("Croc Adjacent List:")
+    print("Croc Adjacency List:")
     cm.display_graph()
 
 # Don't Use; this sort might need to be rewritten to work.
