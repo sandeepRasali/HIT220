@@ -26,7 +26,7 @@ class Graph:
         self.graph[v2 - 1] = node
   
    # Function to print a BFS of graph
-    def BFS(self, startNode):
+    def BFS(self, s):
  
         # Mark all the vertices as not visited
         visited = [False] * (max(self.graph) + 1)
