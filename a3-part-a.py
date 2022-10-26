@@ -65,6 +65,9 @@ class CrocMonitor:
 
             print("\n")
 
+def add_sighting():
+    pass
+
 # Driver Code
 if __name__ == '__main__':
     cm = CrocMonitor()
@@ -88,13 +91,16 @@ if __name__ == '__main__':
         v2_coordinates = [float(cm.node_list[v2 - 1][1]), float(cm.node_list[v2 - 1][2])]
         distance = round(math.dist(v1_coordinates, v2_coordinates), 1) # calculate the distance and round to one decimal place
 
+        # for adding if water exists to edge as weight
+        water = bool(int(edges.node_list[i][2]))
+        
         # for adding sightings to edge as weight
         v1_sightings = int(cm.node_list[v1 - 1][4])
         v2_sightings = int(cm.node_list[v2 - 1][4])
 
         # create edges between vertices with weights
-        v1_weights = {"distance": distance, "sightings": v1_sightings}
-        v2_weights = {"distance": distance, "sightings": v2_sightings}
+        v1_weights = {"distance": distance, "water": water, "sightings": v1_sightings}
+        v2_weights = {"distance": distance, "water": water, "sightings": v2_sightings}
         cm.graph.add_edge(v1, v1_weights, v2, v2_weights)
     
     print("Croc Adjacency List:")
