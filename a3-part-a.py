@@ -60,7 +60,7 @@ class CrocMonitor:
             vertex = self.graph.graph[i] # get vertex
 
             while vertex:
-                print(" -> [{}".format(vertex.data) + ", {}]".format(vertex.weights), end = "")
+                print(" -> {}".format(vertex.data) + ", {}".format(vertex.weights), end = "")
                 vertex = vertex.next
 
             print("\n")
@@ -69,10 +69,10 @@ class CrocMonitor:
 if __name__ == '__main__':
     cm = CrocMonitor()
     cm.import_data('CrocDataNodes.csv')
-    print("Croc Data:")
+    # print("Croc Data:")
     # cm.read_data()
 
-    print("\n")
+    # print("\n")
 
     cm.create_graph()
     edges = CrocMonitor()
@@ -93,8 +93,8 @@ if __name__ == '__main__':
         v2_sightings = int(cm.node_list[v2 - 1][4])
 
         # create edges between vertices with weights
-        v1_weights = [distance, v1_sightings]
-        v2_weights = [distance, v2_sightings]
+        v1_weights = {"distance": distance, "sightings": v1_sightings}
+        v2_weights = {"distance": distance, "sightings": v2_sightings}
         cm.graph.add_edge(v1, v1_weights, v2, v2_weights)
     
     print("Croc Adjacency List:")
