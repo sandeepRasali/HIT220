@@ -12,20 +12,20 @@ class Node:
 class Graph:
     def __init__(self, vertices):
         self.vertices = vertices # total number of vertices
-        self.graph = [None] * self.vertices # vertex list
-    
-    def add_edge(self, v1, v1_weights, v2, v2_weights):
+        self.list = [None] * self.vertices # vertex list
+
+    def add_edge(self, v1, v2, v1_weights = None, v2_weights = None):
         # connect second vertex to first vertex at first vertex's position in vertex list
         node = Node(v2, v2_weights)
-        node.next = self.graph[v1 - 1]
-        self.graph[v1 - 1] = node
+        node.next = self.list[v1 - 1]
+        self.list[v1 - 1] = node
 
         # connect second vertex to first vertex at second vertex's position in vertex list
         node = Node(v1, v1_weights)
-        node.next = self.graph[v2 - 1]
-        self.graph[v2 - 1] = node
+        node.next = self.list[v2 - 1]
+        self.list[v2 - 1] = node
 
-class CrocMonitor:
+class CrocData:
     def __init__(self):
         self.node_list = []
 
@@ -57,7 +57,7 @@ class CrocMonitor:
         for i in range(self.graph.vertices):
             print("Vertex " + str(i + 1) + ":", end = "")
 
-            vertex = self.graph.graph[i] # get vertex
+            vertex = self.graph.list[i] # get vertex
 
             while vertex:
                 print(" -> {}".format(vertex.data) + ", {}".format(vertex.weights), end = "")
@@ -65,21 +65,62 @@ class CrocMonitor:
 
             print("\n")
 
-def add_sighting():
-    pass
+def add_sighting(graph, site: int, source: int = None, distance: float = 1, water: bool = False):
+    if site <= graph.vertices:
+        for i in range(graph.vertices):
+            vertex = graph.list[i]
+
+            while vertex:
+                if vertex.data == site:
+                    vertex.weights["sightings"] += 1
+            
+                vertex = vertex.next
+    else:
+        if source <= graph.vertices:
+            # prepare weights with
+            previous_sightings = 0
+
+            for i in range(graph.vertices):
+                vertex = graph.list[i]
+
+                while vertex:
+                    if vertex.data == source:
+                        previous_sightings = vertex.weights["sightings"]
+
+                        break
+                
+                    vertex = vertex.next
+
+            previous_weights = {"distance": distance, "water": water, "sightings": previous_sightings}
+            location_weights = {"distance": distance, "water": water, "sightings": 1}
+
+            # add temporarily empty vertex to end of list
+            graph.vertices += 1
+            graph.list += [None]
+
+            # create edge with weight between new vertex and existing vertex
+            graph.add_edge(site, source, location_weights, previous_weights)
+        else:
+            print("\033[91m{}\033[00m".format("add_sighting() error: source site does not exist\n"))
+            
 
 # Driver Code
 if __name__ == '__main__':
-    cm = CrocMonitor()
+    # Import Datasets
+    cm = CrocData()
     cm.import_data('CrocDataNodes.csv')
-    # print("Croc Data:")
+    # print("Croc Nodes Data:\n")
     # cm.read_data()
-
     # print("\n")
 
-    cm.create_graph()
-    edges = CrocMonitor()
+    edges = CrocData()
     edges.import_data('CrocDataEdges.csv')
+    # print("Croc Edges Data:\n")
+    # edges.read_data()
+    # print("\n")
+
+    # Implement Datasets as Adjacency List
+    cm.create_graph()
 
     for i in range(0, len(edges.node_list)):
         # for creating edges between vertices
@@ -93,48 +134,20 @@ if __name__ == '__main__':
 
         # for adding if water exists to edge as weight
         water = bool(int(edges.node_list[i][2]))
-        
+
         # for adding sightings to edge as weight
         v1_sightings = int(cm.node_list[v1 - 1][4])
         v2_sightings = int(cm.node_list[v2 - 1][4])
 
-        # create edges between vertices with weights
+        # create edges with weights between vertices
         v1_weights = {"distance": distance, "water": water, "sightings": v1_sightings}
         v2_weights = {"distance": distance, "water": water, "sightings": v2_sightings}
-        cm.graph.add_edge(v1, v1_weights, v2, v2_weights)
+        cm.graph.add_edge(v1, v2, v1_weights, v2_weights)
     
-    print("Croc Adjacency List:")
+    # print("Croc Adjacency List:")
+    # cm.display_graph()
+
+    add_sighting(cm.graph, 33, 32)
+
+    print("Croc Adjacency List with Added Sightings:\n")
     cm.display_graph()
-
-# Don't Use; this sort might need to be rewritten to work.
-
-# Merge Sort Algorithm adapted from https://www.geeksforgeeks.org/merge-sort/
-# def merge_sort_desc(array, sort_by_index: int):
-#     if len(array) > 1:
-#         mid = len(array) // 2 # midpoint
-#         left = array[:mid] # left half
-#         right = array[mid:] # right half
-
-#         merge_sort_desc(left, sort_by_index) # sort left half
-#         merge_sort_desc(right, sort_by_index) # sort right half
-
-#         i = j = k = 0 # iterators
-
-#         while i < len(left) and j < len(right):
-#             if left[i][sort_by_index] > right[j][sort_by_index]:
-#                 array[k] = left[i]
-#                 i += 1
-#             else:
-#                 array[k] = right[j]
-#                 j += 1
-#             k += 1
-
-#         while i < len(left):
-#             array[k] = left[i]
-#             i += 1
-#             k += 1
-        
-#         while j < len(right):
-#             array[k] = right[j]
-#             j += 1
-#             k += 1
