@@ -87,12 +87,6 @@ class MinHeap:
     def is_in_heap(self, v):
         return True if self.position[v] < self.size else False
 
-def print_array(dist, n):
-    print("Vertex\tDistance from source")
-
-    for i in range(n):
-        print("%d\t\t%d" % (i, dist[i]))
-
 # Graph Representation - Adjacency List
 class Graph:
     def __init__(self, vertices):
@@ -116,41 +110,52 @@ class Graph:
     def dijkstra(self, source):
         vertices = self.vertices
         dist = []
-
-        min_heap = MinHeap()
+        target = source - 1 # for indexing
 
         # construct min heap
+        min_heap = MinHeap()
+
+        min_heap.size = vertices
+
         for v in range(vertices):
-            dist.append(1e7)
+            dist.append(1e7) # initialise with large distance to all nodes
             min_heap.array.append(min_heap.new_node(v, dist[v]))
             min_heap.position.append(v)
 
-        min_heap.decrease_key(source, dist[source])
+        # distance to source equals 0
+        min_heap.position[target] = target
+        dist[target] = 0
+        min_heap.decrease_key(target, dist[target])
 
-        # print(min_heap.array)
-        # print(min_heap.position)
-
-        min_heap.size = vertices
-        
         while min_heap.is_empty() == False:
-            node = min_heap.extract_min()
-            u = node[0]
+            min = min_heap.extract_min()
+            node = min[0]
+            # print("Vertex", node + 1)
+            # print("Min Distance =", round(min[1], 1))
+            # print("To\t\tDistance\tPrev Distance")
 
             for i in range(vertices):
                 vertex = self.list[i]
-                
-                if vertex.data == u:
+
+                if vertex.source == node + 1:
                     while vertex:
-                        v = vertex.data
+                        data = vertex.data
+                        # print(f"{data}\t\t{round(vertex.weights['distance'] + dist[node], 1)}\t\t{round(dist[data - 1], 1)}")
 
-                        if min_heap.is_in_heap(v) and dist[u] != 1e7 and vertex.weights["distance"] + dist[u] < dist[v]:
-                            dist[v] = vertex.weights["distance"] + dist[u]
-
-                            min_heap.decrease_key(v, dist[v])
+                        if dist[node] != 1e7 and vertex.weights["distance"] + dist[node] < dist[data - 1]:
+                            dist[data - 1] = vertex.weights["distance"] + dist[node]
+                            min_heap.decrease_key(data - 1, dist[data - 1])
 
                         vertex = vertex.next
+            
+            print("")
 
-        print_array(dist, vertices)
+        print(f"Vertices\tDistance from {source}")
+
+        for i in range(vertices):
+            print("%d\t\t%.1f" % (i + 1, dist[i]))
+
+        # return [[i + 1, round(dist[i], 1)] for i in range(vertices)]
 
 # Data Handling
 class CrocData:
