@@ -55,14 +55,18 @@ class MinHeap:
         if self.is_empty() == True:
             return
 
+        # preserve root node
         root_node = self.array[0]
-        last_node = self.array[self.size - 1]
 
+        # replace root node with last node
+        last_node = self.array[self.size - 1]
         self.array[0] = last_node
 
+        # update last node's position
         self.position[last_node[0]] = 0
         self.position[root_node[0]] = self.size - 1
 
+        # decrement heap size and heapify
         self.size -= 1
         self.heapify(0)
 
@@ -110,6 +114,7 @@ class Graph:
     def dijkstra(self, source):
         vertices = self.vertices
         dist = []
+        path = [[]] * self.vertices # stores paths
         target = source - 1 # for indexing
 
         # construct min heap
@@ -123,16 +128,17 @@ class Graph:
             min_heap.position.append(v)
 
         # distance to source equals 0
-        min_heap.position[target] = target
         dist[target] = 0
         min_heap.decrease_key(target, dist[target])
 
         while min_heap.is_empty() == False:
             min = min_heap.extract_min()
             node = min[0]
+
+            # # for debugging
             # print("Vertex", node + 1)
             # print("Min Distance =", round(min[1], 1))
-            # print("To\t\tDistance\tPrev Distance")
+            # print("To\tDistance\tPrev Distance\t")
 
             for i in range(vertices):
                 vertex = self.list[i]
@@ -140,22 +146,30 @@ class Graph:
                 if vertex.source == node + 1:
                     while vertex:
                         data = vertex.data
-                        # print(f"{data}\t\t{round(vertex.weights['distance'] + dist[node], 1)}\t\t{round(dist[data - 1], 1)}")
 
-                        if dist[node] != 1e7 and vertex.weights["distance"] + dist[node] < dist[data - 1]:
+                        # # for debugging
+                        # print(f"{data}\t{round(vertex.weights['distance'] + dist[node], 1)}\t\t{round(dist[data - 1], 1)}")
+
+                        if vertex.weights["distance"] + dist[node] < dist[data - 1]:
                             dist[data - 1] = vertex.weights["distance"] + dist[node]
                             min_heap.decrease_key(data - 1, dist[data - 1])
+                            
+                            # PSUEDOCODE
+                            # add adjancent vertex with shortest path to path list
 
                         vertex = vertex.next
-            
-            print("")
 
-        print(f"Vertices\tDistance from {source}")
+        # # for debugging
+        # print(f"Vertices\tDistance from {source}\t\tPath")
 
-        for i in range(vertices):
-            print("%d\t\t%.1f" % (i + 1, dist[i]))
+        # for i in range(vertices):
+        #     print("%d\t\t%.1f" % (i + 1, dist[i]), f"\t\t\t{path[i]}")
 
-        # return [[i + 1, round(dist[i], 1)] for i in range(vertices)]
+        output = [[i + 1, round(dist[i], 1)] for i in range(vertices)] # temporary output
+        # OPTIMAL OUTPUT IN PSUEDOCODE: output = [[i + 1, round(dist[i], 1), path[i]] for i in range(vertices)]
+        merge_sort(output)
+
+        return output
 
 # Data Handling
 class CrocData:
@@ -199,7 +213,38 @@ class CrocData:
                 print("\n")
         except:
             print("This dataset has no graph.")
+
+# Merge Sort
+# Note: adapted from https://www.geeksforgeeks.org/merge-sort/
+def merge_sort(array):
+    if len(array) > 1: # base case
+        mid = len(array) // 2 # midpoint
+        left = array[:mid] # left half
+        right = array[mid:] # right half
+
+        merge_sort(left) # sort left half
+        merge_sort(right) # sort right half
+
+        i = j = k = 0 # iterators
         
+        while i < len(left) and j < len(right):
+            if left[i][1] < right[j][1]:
+                array[k] = left[i]
+                i += 1
+            else:
+                array[k] = right[j]
+                j += 1
+            k += 1
+
+        while i < len(left):
+            array[k] = left[i]
+            i += 1
+            k += 1
+        
+        while j < len(right):
+            array[k] = right[j]
+            j += 1
+            k += 1
                 
 # Driver Code
 if __name__ == "__main__":
@@ -244,4 +289,4 @@ if __name__ == "__main__":
     print("Croc Nodes Adjacency List:\n")
     cd.display_as_graph()
 
-    cd.graph.dijkstra(8)
+    print(cd.graph.dijkstra(4))
