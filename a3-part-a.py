@@ -185,15 +185,8 @@ if __name__ == '__main__':
     # Import Datasets
     cm = CrocData()
     cm.import_data('CrocDataNodes.csv')
-<<<<<<< HEAD
     print("Croc Nodes Data:\n")
     cm.read_data()
-=======
-
-    # Show Data (comment/uncomment as needed)
-    # print("Croc Nodes Data:\n")
-    # cm.read_data()
->>>>>>> d41da078563d9b2c2e15e2801d7abe8f3babe2f7
     # print("\n")
 
     edges = CrocData()
