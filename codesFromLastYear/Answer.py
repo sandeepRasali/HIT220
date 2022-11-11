@@ -329,7 +329,7 @@ class CrocMonitor:
 
         #go through locationList & find closest neighbour to beach - block this point
         minDist = 1000
-        blocked = ''
+        blocked = '' 
         for location in self.locationList:
             if location[4] == beach:
                 if location[5] < minDist:
@@ -355,7 +355,7 @@ class CrocMonitor:
             if path[index]!=newpath[index]:
                 point=path[index-1]
                 break
-        return point, protection
+        return point
 
 
 
