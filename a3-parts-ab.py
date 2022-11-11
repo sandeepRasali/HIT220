@@ -108,7 +108,7 @@ class Graph:
         node.next = self.list[v2 - 1]
         self.list[v2 - 1] = node
 
-    # Breadth First Search Algorithm - NEEDS UPDATING
+    # Breadth First Search Algorithm !! NEEDS UPDATING !!
     # def bfs(self, startNode):
     #     visited = [False] * self.vertices # mark all the vertices as not visited
 
@@ -142,10 +142,11 @@ class Graph:
         
         return visited
 
-    # Dijkstra's Algorithm - for finding the shortest path of a weighted graph,
-    # in O(ElogV) time, where E is edge and V is vertex.
+    # Dijkstra's Algorithm - for finding the shortest path of a weighted graph.
+    # Complexity: O(ElogV), where E is edge and V is vertex.
     # Note: adapted from https://www.geeksforgeeks.org/dijkstras-algorithm-for-adjacency-list-representation-greedy-algo-8/
     # Note: This algorithm is bugged currently as it sometimes does not calculate the shortest distance for all vertices depending on the source input.
+    # Therefore, the functions reliant on this algorithm will be pseudocoded due to time constraints.
     def dijkstra(self, source):
         vertices = self.vertices
         dist = [] # stores distances
@@ -250,7 +251,7 @@ class CrocData:
         except:
             print("This dataset has no graph.")
 
-    # PSEUDOCODE: The following code calculates and ouputs the closest site with the maximum number of sightings. - NEEDS UPDATING
+    # PSEUDOCODE: The following code calculates and ouputs the closest site with the maximum number of sightings. !! NEEDS UPDATING !!
     # def next_site(previous_site, previous_number):
     #     call bfs() to get the adjacent sites of previous_site
     #     bfs(previous_site)
@@ -315,14 +316,50 @@ class CrocData:
                 self.graph.add_edge(site, previous_location, new_site_weights, previous_weights)
             else:
                 print("\033[91m{}\033[00m".format("add_sighting() error: The previous location specified does not exist\n"))
-
-    # PSUEDOCODE: The following code computes the costing (in distance travelled) of performing an exhaustive search of all sites within an area bound by two sites.
+    
+    # PSUEDOCODE: The following code computes the cost (in distance travelled) of performing an exhaustive search of all sites within an area bound by two sites.
     def compute_costing(self, top_left, bottom_right):
-        pass
+        subgraph = Graph(len(self.node_list))
 
-    # PSEUDOCODE: The following code determines where to place a blockage in the shortest route between two points to maximise the shortest distance between them.
+        # INSERT CODE: create edges in the subgraph bound by sites top_left and bottom_right
+
+        # INSERT CODE: sort adjacent vertices for each source vertex by shortest distance,
+        # so that the adjacent vertex with the shortest distance to the source vertex is at the top of each linked list
+
+        path = subgraph.dfs(top_left) # perform a depth first search to visit all sites in the subgraph, i.e., all sites in the area
+        visited = [] # stores visited sites
+        revisit = False # stores if sites will be revisited
+        revisiting = [] # stores sites that will be revisited
+        cost = 0 # stores overall cost in distance travelled
+
+        visited.append(path[0]) # mark the starting site (top_left) as visited
+
+        for i in range(0, len(path)):
+            for j in range(subgraph.vertices):
+                vertex = subgraph.list[j]
+
+                if vertex.source == path[i]:
+                    # use the distance of the first adjacent vertex, which is already the shortest distance in this vertex's linked list,
+                    # as dfs() visits the first adjacent vertex in a linked list and moves on
+                    cost += vertex.weights["distance"] # add distance of the first/closest adjacent vertex to the overall cost
+                    visited.append(vertex.data) # mark the first/closest adjacent vertex as visited
+
+                    # check if the adjacent vertex has been visited before
+                    if vertex.data in visited:
+                        revisit = True # a site will be revisited so return true
+                        revisiting.append(vertex.data) # mark the site as a site that will be revisited
+
+                    break # continue to next site in path
+
+        print(f"Shortest Path: {path}")
+        print(f"Minimum Cost: {cost}")
+        print(f"Will sites be revisited? {revisit}")
+        print(f"Which sites will be revisited? {revisiting}")
+
+    # PSEUDOCODE: The following code determines where to place a blockage in the shortest route between two sites to maximise the shortest distance between them.
     def improve_distance(self, a, b):
-        shortest = self.graph.dijkstra(a) # calculate the shortest distances and paths from a
+        shortest = self.graph.dijkstra(a) # find the shortest distances and paths from a
+        # Note: The output of dijkstra() is [site, shortest distance from source, shortest path from source]
 
         for i in range(0, len(shortest)):
             if shortest[i][0] == b:
@@ -331,143 +368,124 @@ class CrocData:
 
                 break
 
-        alt = []
+        alt_list = []
 
         for i in range(0, len(path)):
             if i == 0 or i == len(path):
-                continue # skip site a and site b (see assumptions)
+                continue # skip first route and last route (see assumptions)
             else:
                 # INSERT CODE: place blockage between site i and i + 1
 
-                blocked = self.graph.dijkstra(a) # calculate the alternate shortest distances and paths from a with blockage in place
+                blocked = self.graph.dijkstra(a) # find the alternate shortest distances and paths from a with blockage in place
                 
                 for j in range(0, len(blocked)):
                     if blocked[j][0] == b:
-                        alt_dist = blocked[j][1] # store the alternate distance from a to b
+                        alt_dist = blocked[j][1] # store the shortest alternate distance from a to b
 
                         break
                 
-                improvement = round(alt_dist / dist, 1) # alternate distance proportionate to original distance as the higher the ratio the better
+                improvement = alt_dist / dist # alternate distance proportionate to original distance as the higher the ratio the better
 
-                alt.append([i, improvement]) # store the distance ratio of when the blockage is placed at i
+                alt_list.append([path[i], improvement]) # store the improvement ratio of when the blockage is placed at site i
 
                 # INSERT CODE: remove blockage between site i and i + 1
         
-        merge_sort_dsc(alt, 1) # sort by largest ratio
+        merge_sort_dsc(alt_list, 1) # sort by largest ratio
 
-        return f"By placing a blockage at location {alt[0][0]}, the distance between {a} and {b} is improved by a ratio of {alt[0][1]}."
+        return f"By placing a blockage at location {alt_list[0][0]}, the distance between {a} and {b} is improved by a ratio of {alt_list[0][1]}."
     
-    
-    
+    # PSUEDOCODE: The following code calculates the travel time of the shortest path between two locations.
+    # Note: Optionally, you can calculate the travel time between two locations in an area by specifying a subgraph.
+    def min_time(self, a, b, subgraph = None):
+        if subgraph:
+            shortest = subgraph.dijkstra(a)
+        else:
+            shortest = self.graph.dijkstra(a)
 
-####################################################################################################
-####################################### Question C #################################################
-####################################################################################################
+        for i in range(0, len(shortest)):
+            if shortest[i][0] == b:
+                path = shortest[i][2] # store the shortest path from a to b
 
+        time = 0 # stores overall travel time
 
-# Pseudocoded answer:
+        # check the edge weights between each point in the shortest path list
+        # and calculate the travel time between these points using crocTravelTime()
+        for i in range(0, len(path)):
+            for j in range(self.graph.vertices):
+                vertex = self.graph.list[j]
 
-
-
-# # this function calculates the croc travel time either in water or environment
-# def crocTravelTime(self, distance, isWater):  # isWater = 1 if the route is through the water
-#                                                 #and 0 if it is through land
-    
-#     travelTime = 0
-#     crocSpeed = 0
-    
-#     if route is through Water:
-#         crocSpeed = 16 # km/hr
-    
-#     else route is through Environmen:
-#         crocSpeed = 5   #km/hr
-        
-    
-#     travelTime = distance/crocSpeed   #(speed = distance / time)
-#     return travelTime
-
-# def calculateDistance(self, v1, v2):
-#     for i in range(0, len(edges.node_list)):
-#         # for creating edges between vertices
-#         v1 = int(edges.node_list[i][0])
-#         v2 = int(edges.node_list[i][1])
-
-#         # for adding distance to edge as a weight
-#         v1_coordinates = [float(cd.node_list[v1 - 1][1]), float(cd.node_list[v1 - 1][2])]
-#         v2_coordinates = [float(cd.node_list[v2 - 1][1]), float(cd.node_list[v2 - 1][2])]
-#         distance = round(math.dist(v1_coordinates, v2_coordinates), 1) # calculate the distance and round to one decimal place
-#         return distance
-        
-# def storeDistance(self):
-    
-#     edgeList = []
-#     for i in range (0, len(edges.node_list)-1):
-#        startPoint = self.edges[i][0]       # nodes in the graph
-#        endPoint =  self.edges[i][1]     # neighbor (adjacent nodes)
-#        iswater = self.edges[i][2]
-#        distance = self.calculateDistance(startNode, endNode)   #calculates the distance between two nodes
-#        edgeList.append(startPoint, endPoint, distance, iswater)
-       
-# def minTime(self, a, b): # this function returns array of sites travelled and time required btween two points a and b
-#   route = [] # assigning list variable to store the paths between two given points
-#   totalTravelTime = 0
-  
-  
-#   for edge in self.edgeList:
-#       edge.append(self.crocTravelTime(edge[2], edge[3])) # calculating crocTraveltime and appending in the edge
-      
-      
-#   #using dijkstra's algorithm to find the shortest routes
-  
-#   path = self.graph.dijkstra(self, a)   
-#   target = b   
-#   for i in range (0, len(path)-1):
-#       totalTravelTime += graph.weights[path[i], path[i+1]]
-#       return path and totalTravelTime
-
-
-
-
-# def point_no_pass(self, safeLocation, radius): # this function return the point to be blocked to ensure the location is safer
-#     crocNumber = 0
-#     locationIndex = 0
-#     locationDistanceList = {}
-#     inRange = {}
-    
-#     for i in range (0, len(self.node_list)):
-#         if self.node_list[i][0] == safeLocation:
-#             locationIndex = i
+                if vertex.source == path[i]:
+                    while vertex:
+                        if vertex.data == path[i + 1]: # out of indexing range?
+                            distance = vertex.weights["distance"]
+                            water = vertex.weights["water"]
+                            time += crocTravelTime(distance, water)
             
-#     for i in range(0, len(self.node_list)):
-#             locationDistanceList[self.node_list[i][0]] = self.computeDistance1(safeLocation, self.node_list[i][0],
-#                                                                                     locationIndex, i)
+                        vertex = vertex.next
+        
+        return path, time
+    
+    # PSEUDOCODE: The following code determines where to place a blockage in an area around a certain site to make it safer.
+    # Assumption: The point is made safer by improving the travel time of the shortest path from the site in the area with the most sightings to the center.
+    def point_no_pass(self, point, radius):
+        subgraph = Graph(self.graph.vertices)
 
-#     for key in locationDistanceList:
-#             if locationDistanceList.get(key) <= radius:
-#                 inRange[key] = locationDistanceList.get(key)
+        # INSERT CODE: create edges in the subgraph connecting all the vertices with the area bound by the specified radius
 
-#     for node in self.node_list:
-#             if node[0] in inRange.keys() and node[3] != '':
-#                 crocNumber += float(node[3])
-#     print("The croc number in the given points is:", crocNumber)
+        danger = subgraph.list[0] # stores the site with the most sightings; start with first vertex
+
+        # determine which site in the subgraph has the most sightings
+        for i in range(subgraph.vertices):
+            vertex = subgraph.list[i]
+
+            while vertex:
+                if vertex.weights["sightings"] > danger.weights["sightings"]:
+                    danger = vertex
+
+                vertex = vertex.next
+
+        travel_time = self.min_time(point, danger, subgraph) # calculate the base minimum travel time
+        blockage = None # stores blockage location
+
+        shortest = subgraph.dijkstra(point) # find the shortest paths to all sites from the center
+
+        for i in range(0, len(shortest)):
+            if shortest[i][0] == danger.data:
+                path = shortest[i][2] # store the unblocked shortest route from the center to the site with most sightings 
+
+                break
+
+        # similar code to improve_distance(), adapted for travel time
+        for i in range(0, len(path)):
+            if i == 0 or i == len(path):
+                continue # skip first route and last route (see assumptions)
+            else:
+                # INSERT CODE: place blockage between site i and i + 1
+
+                new_time = self.min_time(point, danger, subgraph) # calculate minimum travel time with blockage in place
+
+                # if the travel time with the blockage at this location is improved, update travel time and blockage location
+                if new_time[1] > travel_time[1]:
+                    travel_time = new_time
+                    blockage = path[i]
+
+                # INSERT CODE: remove blockage between site i and i + 1
+
+        return blockage
+
+# The following code calculates the travel time of a croc depending on the terrain its travelling in.
+def crocTravelTime(distance, water):
+    time = 0
+    speed = 0
     
-#     path = self.dijkstras(self) # calling dijkstras to find the shortest path between two location
-#     newPath = []
-   
-#     for i in range(0, len(self.edge_list)-1):
-#          if self.edge_list[i][0]==s1:
-#             newPath.append(s1)  
-                        
-#     for i in range(0, len(path)-1):
-#          if path[i]!=newPath[i]:
-#             point=path[i-1]
-#             break
-#     return point   # return points to be blocked         
-       
+    if water == True:
+        speed = 16 # km/h
+    else:
+        speed = 6 # km/h
     
-    
-            
-    
+    time = distance / speed # speed = distance / time
+
+    return time
 
 # Merge Sort Ascending - for sorting a two-dimensional matrix in ascending order by a specified index
 # Note: adapted from https://www.geeksforgeeks.org/merge-sort/
@@ -574,7 +592,4 @@ if __name__ == "__main__":
         cd.graph.add_edge(v1, v2, v1_weights, v2_weights)
 
     print("Croc Nodes Adjacency List:\n")
-    cd.add_sighting(33, 3, True, 34)
     cd.display_as_graph()
-    
-    # cd.minTime("15", "18") 
