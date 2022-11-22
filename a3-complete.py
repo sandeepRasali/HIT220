@@ -96,12 +96,14 @@ class Graph:
     def __init__(self, vertices):
         self.vertices = vertices
         self.list = [None] * self.vertices
+        self.in_degrees = [0] * self.vertices # tracks in-degrees
 
     def add_edge(self, v1, v2, v2_weights):
         # connect second vertex to first vertex at first vertex's position in vertex list
         node = Node(v2, v1, v2_weights)
         node.next = self.list[v1 - 1]
         self.list[v1 - 1] = node
+        self.in_degrees[v2 - 1] += 1
 
         # connect first vertex to second vertex at second vertex's position in vertex list
         # node = Node(v1, v2, v1_weights)
@@ -157,6 +159,21 @@ class Graph:
                     vertex = vertex.next
         
         return visited
+
+    # Depth First Search Algorithm - for finding Eulerian Cycles.
+    def dfs_utility(self, source, visited):
+        visited[source] = True
+
+        for vertex in self.list:
+            if vertex == None:
+                continue
+            
+            if vertex.source == source:
+                while vertex:
+                    if vertex.data == False:
+                        self.dfs_utility(vertex.data, vertex.source)
+
+                    vertex = vertex.next
 
     # Dijkstra's Algorithm - for finding the shortest path of a weighted graph.
     # Complexity: O(ElogV), where E is edge and V is vertex.
@@ -224,6 +241,78 @@ class Graph:
 
         return output
 
+    # The following function transposes (reverses) the direction of the graph.
+    def transpose(self):
+        reverse = Graph(self.vertices)
+
+        for vertex in self.list:
+            if vertex == None:
+                continue
+
+            while vertex:
+                reverse.add_edge(vertex.data, vertex.source, vertex.weights)
+
+                vertex = vertex.next
+
+        return reverse
+
+    def strongly_connected(self):
+        visited = [False] * self.vertices
+
+        vertex = 0
+
+        self.dfs_utility(vertex, visited)
+
+        for i in range(self.vertices):
+            if visited[i] == False:
+                return False
+
+        reverse = self.transpose()
+        
+        visited = [False] * self.vertices
+
+        reverse.dfs_utility(vertex, visited)
+
+        for i in range(self.vertices):
+            if visited[i] == False:
+                return False
+            
+        return True
+
+    def euler_cycle_exists(self):
+        if self.strongly_connected() == False:
+            return False
+    
+        for vertex in self.list:
+            out_degree = 0
+            
+            while vertex:
+                out_degree += 1
+
+                vertex = vertex.next
+
+            if out_degree != self.in_degrees[vertex]:
+                return False
+
+        return True
+
+    def display_graph(self):
+        try:
+            for i in range(self.vertices):
+                if self.list[i]:
+                    vertex = self.list[i]
+                    print("Vertex " + str(vertex.source) + ":", end = "")
+
+                    while vertex:
+                        print(" -> {}".format(vertex.data) + ", {}".format(vertex.weights), end = "")
+                        vertex = vertex.next
+
+                    print("\n")
+                else:
+                    continue
+        except:
+            print("This dataset has no graph.")
+
 # Data Handling
 class CrocData:
     def __init__(self):
@@ -252,23 +341,6 @@ class CrocData:
     
     def create_graph(self):
         self.graph = Graph(len(self.node_list))
-    
-    def display_as_graph(self):
-        try:
-            for i in range(self.graph.vertices):
-                if self.graph.list[i]:
-                    vertex = self.graph.list[i]
-                    print("Vertex " + str(vertex.source) + ":", end = "")
-
-                    while vertex:
-                        print(" -> {}".format(vertex.data) + ", {}".format(vertex.weights), end = "")
-                        vertex = vertex.next
-
-                    print("\n")
-                else:
-                    continue
-        except:
-            print("This dataset has no graph.")
 
     # PSEUDOCODE: The following code calculates and ouputs the closest site with the maximum number of sightings. !! NEEDS UPDATING !!
     # def next_site(previous_site, previous_number):
@@ -623,7 +695,7 @@ if __name__ == "__main__":
         v2_weights = {"distance": distance, "water": water, "sightings": v2_sightings}
         cd.graph.add_edge(v1, v2, v2_weights)
 
-    print("Croc Nodes Adjacency List:\n")
-    cd.display_as_graph()
+    # print("Croc Nodes Adjacency List:\n")
+    cd.graph.display_graph()
 
-    cd.route_exists(2, 19)
+    print(cd.graph.euler_cycle_exists())
