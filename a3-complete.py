@@ -113,6 +113,7 @@ class Graph:
     def bfs(self, start):
         visited = [False] * self.vertices
         queue = []
+        output = []
 
         # enqueue starting vertex
         queue.append(start)
@@ -123,7 +124,7 @@ class Graph:
             # dequeue starting vertex
             start = queue.pop(0)
             # return starting vertex
-            print(start, end = " ")
+            output.append(start)
 
             for vertex in self.list:
                 if vertex == None:
@@ -138,6 +139,8 @@ class Graph:
                             visited[vertex.data] = True
 
                         vertex = vertex.next
+                    
+        return output
 
     # Depth First Search Algorithm - for finding the path of visiting all adjacent vertices from a starting vertex.
     def dfs(self, source, visited = []):
@@ -488,6 +491,19 @@ class CrocData:
                 # INSERT CODE: remove blockage between site i and i + 1
 
         return blockage
+    
+    def route_exists(self, point_a, point_b):
+        visitable = self.graph.bfs(point_a)
+        exists = False
+
+        for i in range(0, len(visitable)):
+            if visitable[i] == point_b:
+                exists = True
+           
+        if exists:
+            print(f"A route exists from {point_a} to {point_b}.")
+        else:
+            print(f"There is no route from {point_a} to {point_b}.")
 
 # The following code calculates the travel time of a croc depending on the terrain its travelling in.
 def crocTravelTime(distance, water):
@@ -610,5 +626,4 @@ if __name__ == "__main__":
     print("Croc Nodes Adjacency List:\n")
     cd.display_as_graph()
 
-    print("BFS Test:")
-    cd.graph.bfs(2)
+    cd.route_exists(2, 19)
