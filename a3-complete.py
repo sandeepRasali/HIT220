@@ -91,22 +91,22 @@ class MinHeap:
     def is_empty(self):
         return True if self.size == 0 else False
 
-# Graph Representation - Adjacency List
+# Graph Representation - Adjacency List (directed graph)
 class Graph:
     def __init__(self, vertices):
         self.vertices = vertices
         self.list = [None] * self.vertices
 
-    def add_edge(self, v1, v2, v1_weights, v2_weights):
+    def add_edge(self, v1, v2, v2_weights):
         # connect second vertex to first vertex at first vertex's position in vertex list
         node = Node(v2, v1, v2_weights)
         node.next = self.list[v1 - 1]
         self.list[v1 - 1] = node
 
         # connect first vertex to second vertex at second vertex's position in vertex list
-        node = Node(v1, v2, v1_weights)
-        node.next = self.list[v2 - 1]
-        self.list[v2 - 1] = node
+        # node = Node(v1, v2, v1_weights)
+        # node.next = self.list[v2 - 1]
+        # self.list[v2 - 1] = node
 
     # Breadth First Search Algorithm !! NEEDS UPDATING !!
     # def bfs(self, startNode):
@@ -240,14 +240,17 @@ class CrocData:
     def display_as_graph(self):
         try:
             for i in range(self.graph.vertices):
-                vertex = self.graph.list[i]
-                print("Vertex " + str(vertex.source) + ":", end = "")
+                if self.graph.list[i]:
+                    vertex = self.graph.list[i]
+                    print("Vertex " + str(vertex.source) + ":", end = "")
 
-                while vertex:
-                    print(" -> {}".format(vertex.data) + ", {}".format(vertex.weights), end = "")
-                    vertex = vertex.next
+                    while vertex:
+                        print(" -> {}".format(vertex.data) + ", {}".format(vertex.weights), end = "")
+                        vertex = vertex.next
 
-                print("\n")
+                    print("\n")
+                else:
+                    continue
         except:
             print("This dataset has no graph.")
 
@@ -583,13 +586,13 @@ if __name__ == "__main__":
         water = bool(int(edges.node_list[i][2]))
 
         # for representing sightings as an attribute of a vertex
-        v1_sightings = int(cd.node_list[v1 - 1][4])
+        # v1_sightings = int(cd.node_list[v1 - 1][4])
         v2_sightings = int(cd.node_list[v2 - 1][4])
 
         # create edges with weights between vertices
-        v1_weights = {"distance": distance, "water": water, "sightings": v1_sightings}
+        # v1_weights = {"distance": distance, "water": water, "sightings": v1_sightings}
         v2_weights = {"distance": distance, "water": water, "sightings": v2_sightings}
-        cd.graph.add_edge(v1, v2, v1_weights, v2_weights)
+        cd.graph.add_edge(v1, v2, v2_weights)
 
     print("Croc Nodes Adjacency List:\n")
     cd.display_as_graph()
