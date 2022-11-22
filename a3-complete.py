@@ -108,23 +108,36 @@ class Graph:
         # node.next = self.list[v2 - 1]
         # self.list[v2 - 1] = node
 
-    # Breadth First Search Algorithm !! NEEDS UPDATING !!
-    # def bfs(self, startNode):
-    #     visited = [False] * self.vertices # mark all the vertices as not visited
+    # Breadth First Search Algorithm - for finding the visitable vertices from a starting vertex
+    # Note: adapted from https://www.geeksforgeeks.org/breadth-first-search-or-bfs-for-a-graph/
+    def bfs(self, start):
+        visited = [False] * self.vertices
+        queue = []
 
-    #     queue = [] # queue for BFS
-
-    #     append startNode to queue
-    #     mark startNode as visited and enqueue it
+        # enqueue starting vertex
+        queue.append(start)
+        # mark starting vertex as visited
+        visited[start] = True
         
-    #     while queue:
-    #         dequeue a vertex from queue and store in an array
-    #         then get all adjacent veritices of the dequeued vertex
+        while queue:
+            # dequeue starting vertex
+            start = queue.pop(0)
+            # return starting vertex
+            print(start, end = " ")
 
-    #         if adjacent has not been visited:
-    #             then mark it as visited and enqueue it
-            
-    #     return the adjacent vertices array
+            for vertex in self.list:
+                if vertex == None:
+                    continue # skip iteration if null
+
+                if vertex.source == start:
+                    while vertex:
+                        if visited[vertex.data] == False:
+                            # enqueue adjacent vertex
+                            queue.append(vertex.data)
+                            # mark adjacent vertex as visited
+                            visited[vertex.data] = True
+
+                        vertex = vertex.next
 
     # Depth First Search Algorithm - for finding the path of visiting all adjacent vertices from a starting vertex.
     def dfs(self, source, visited = []):
@@ -596,3 +609,6 @@ if __name__ == "__main__":
 
     print("Croc Nodes Adjacency List:\n")
     cd.display_as_graph()
+
+    print("BFS Test:")
+    cd.graph.bfs(2)
