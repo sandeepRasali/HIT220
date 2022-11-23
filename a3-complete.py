@@ -297,10 +297,23 @@ class Graph:
         path.pop()
         visited[start] = False
 
-    def scheduled_points(self, point_a, point_b):
+    def all_paths(self, start, end):
         visited = [False] * self.vertices
         path = []
-        self.find_paths(point_a, point_b, visited, path)
+        self.find_paths(start, end, visited, path)
+    
+    # PSUEDOCODE: The above functions do not return a usable list of paths. Therefore, the following function will be written in psuedocode.
+    # The following function outputs a list of points that all paths between two points are dependent on.
+    def scheduled_points(self, point_a, point_b):
+        paths = self.all_paths(point_a, point_b) # stores [[Path 1], [Path 2], ...]
+        dependent = []
+
+        for i in range(len(paths)):
+            for j in range(len[paths[i]]):
+                if paths[i][j] == paths[i + 1][j]: # paths[i + 1] likely out of index range
+                    dependent.append(paths[i][j])
+        
+        return dependent
 
 # Data Handling
 class CrocData:
@@ -715,5 +728,5 @@ if __name__ == "__main__":
 
     print("\n")
 
-    print("Scheduled Points:")
-    cd.graph.scheduled_points(1, 13)
+    # print("Scheduled Points:")
+    # cd.graph.scheduled_points(1, 13)
