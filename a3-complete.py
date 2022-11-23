@@ -96,14 +96,12 @@ class Graph:
     def __init__(self, vertices):
         self.vertices = vertices
         self.list = [None] * self.vertices
-        self.in_degrees = [0] * self.vertices # tracks in-degrees
 
     def add_edge(self, v1, v2, v2_weights):
         # connect second vertex to first vertex at first vertex's position in vertex list
         node = Node(v2, v1, v2_weights)
         node.next = self.list[v1 - 1]
         self.list[v1 - 1] = node
-        self.in_degrees[v2 - 1] += 1
 
         # connect first vertex to second vertex at second vertex's position in vertex list
         # node = Node(v1, v2, v1_weights)
@@ -148,8 +146,9 @@ class Graph:
     def dfs(self, source, visited = []):
         visited.append(source)
 
-        for i in range(self.vertices):
-            vertex = self.list[i]
+        for vertex in self.list:
+            if vertex == None:
+                continue
 
             if vertex.source == source:
                 while vertex:
@@ -159,21 +158,6 @@ class Graph:
                     vertex = vertex.next
         
         return visited
-
-    # Depth First Search Algorithm - for finding Eulerian Cycles.
-    def dfs_utility(self, source, visited):
-        visited[source] = True
-
-        for vertex in self.list:
-            if vertex == None:
-                continue
-            
-            if vertex.source == source:
-                while vertex:
-                    if vertex.data == False:
-                        self.dfs_utility(vertex.data, vertex.source)
-
-                    vertex = vertex.next
 
     # Dijkstra's Algorithm - for finding the shortest path of a weighted graph.
     # Complexity: O(ElogV), where E is edge and V is vertex.
@@ -241,77 +225,51 @@ class Graph:
 
         return output
 
-    # The following function transposes (reverses) the direction of the graph.
-    def transpose(self):
-        reverse = Graph(self.vertices)
+    def cycles_utility(self, v, visited, stack, cycles):
+        # mark current vertex as visited and add it to the recursion stack
+        visited[v] = True
+        stack.append(v)
 
         for vertex in self.list:
             if vertex == None:
                 continue
 
-            while vertex:
-                reverse.add_edge(vertex.data, vertex.source, vertex.weights)
+            # recurse for all adjacent vertices
+            # and if any are visited and are in the recursion stack,
+            # the graph is cyclic
+            if vertex.source == v:
+                while vertex:
+                    if visited[vertex.data] == False:
+                        self.cycles_utility(vertex.data, visited, stack, cycles)
+                    elif vertex.data in stack:
+                        start = stack.index(vertex.data)
+                        cycle = []
 
-                vertex = vertex.next
+                        for i in range(start, len(stack)):
+                            cycle.append(stack[i])
 
-        return reverse
+                        cycle.append(cycle[0])
+                        
+                        cycles.append(cycle)
 
-    def strongly_connected(self):
-        visited = [False] * self.vertices
-
-        vertex = 0
-
-        self.dfs_utility(vertex, visited)
-
-        for i in range(self.vertices):
-            if visited[i] == False:
-                return False
-
-        reverse = self.transpose()
+                    vertex = vertex.next
         
-        visited = [False] * self.vertices
+        # the current vertex is popped from the recursion stack before the function ends
+        stack.pop()
 
-        reverse.dfs_utility(vertex, visited)
+    def cycles(self):
+        visited = [False] * (self.vertices + 1)
+        stack = []
+        cycles = []
 
-        for i in range(self.vertices):
-            if visited[i] == False:
-                return False
-            
-        return True
-
-    def euler_cycle_exists(self):
-        if self.strongly_connected() == False:
-            return False
-    
         for vertex in self.list:
-            out_degree = 0
-            
-            while vertex:
-                out_degree += 1
+            if vertex == None:
+                continue
 
-                vertex = vertex.next
-
-            if out_degree != self.in_degrees[vertex]:
-                return False
-
-        return True
-
-    def display_graph(self):
-        try:
-            for i in range(self.vertices):
-                if self.list[i]:
-                    vertex = self.list[i]
-                    print("Vertex " + str(vertex.source) + ":", end = "")
-
-                    while vertex:
-                        print(" -> {}".format(vertex.data) + ", {}".format(vertex.weights), end = "")
-                        vertex = vertex.next
-
-                    print("\n")
-                else:
-                    continue
-        except:
-            print("This dataset has no graph.")
+            if visited[vertex.source] == False:
+                self.cycles_utility(vertex.source, visited, stack, cycles)
+        
+        return cycles
 
 # Data Handling
 class CrocData:
@@ -338,6 +296,23 @@ class CrocData:
 
     def display_as_matrix(self):
         print(self.node_list, "\n")
+
+    def display_graph(self):
+        try:
+            for i in range(self.graph.vertices):
+                if self.graph.list[i]:
+                    vertex = self.graph.list[i]
+                    print("Vertex " + str(vertex.source) + ":", end = "")
+
+                    while vertex:
+                        print(" -> {}".format(vertex.data) + ", {}".format(vertex.weights), end = "")
+                        vertex = vertex.next
+
+                    print("\n")
+                else:
+                    continue
+        except:
+            print("This dataset has no graph.")
     
     def create_graph(self):
         self.graph = Graph(len(self.node_list))
@@ -696,6 +671,6 @@ if __name__ == "__main__":
         cd.graph.add_edge(v1, v2, v2_weights)
 
     # print("Croc Nodes Adjacency List:\n")
-    cd.graph.display_graph()
+    cd.display_graph()
 
-    print(cd.graph.euler_cycle_exists())
+    print(cd.graph.cycles())
