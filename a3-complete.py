@@ -225,6 +225,8 @@ class Graph:
 
         return output
 
+    # cycles_utility() and cycles() are functions that find all the cycles in the graph.
+    # Note: adapted from https://www.geeksforgeeks.org/detect-cycle-in-a-graph/ to print out paths of cycles
     def cycles_utility(self, v, visited, stack, cycles):
         # mark current vertex as visited and add it to the recursion stack
         visited[v] = True
@@ -232,7 +234,7 @@ class Graph:
 
         for vertex in self.list:
             if vertex == None:
-                continue
+                continue # skip to the next iteration if there is a null vertex
 
             # recurse for all adjacent vertices
             # and if any are visited and are in the recursion stack,
@@ -242,6 +244,7 @@ class Graph:
                     if visited[vertex.data] == False:
                         self.cycles_utility(vertex.data, visited, stack, cycles)
                     elif vertex.data in stack:
+                        # store vertices of the cycle
                         start = stack.index(vertex.data)
                         cycle = []
 
@@ -270,6 +273,34 @@ class Graph:
                 self.cycles_utility(vertex.source, visited, stack, cycles)
         
         return cycles
+    
+    # This is a function that finds all paths between two vertices. It uses DFS to determine the paths.
+    # Note: adapted from https://www.geeksforgeeks.org/find-paths-given-source-destination/
+    def find_paths(self, start, end, visited, path):
+        visited[start] = True
+        path.append(start)
+
+        if start == end:
+            print(path)
+        else:
+            for vertex in self.list:
+                if vertex == None:
+                    continue # skip to the next iteration if there is a null vertex
+
+                if vertex.source == start:
+                    while vertex:
+                        if visited[vertex.data] == False:
+                            self.find_paths(vertex.data, end, visited, path)
+                        
+                        vertex = vertex.next
+        
+        path.pop()
+        visited[start] = False
+
+    def scheduled_points(self, point_a, point_b):
+        visited = [False] * self.vertices
+        path = []
+        self.find_paths(point_a, point_b, visited, path)
 
 # Data Handling
 class CrocData:
@@ -670,7 +701,19 @@ if __name__ == "__main__":
         v2_weights = {"distance": distance, "water": water, "sightings": v2_sightings}
         cd.graph.add_edge(v1, v2, v2_weights)
 
-    # print("Croc Nodes Adjacency List:\n")
+    print("Croc Nodes Adjacency List:\n")
     cd.display_graph()
 
+    print("If Route Exists:")
+    cd.route_exists(3, 15)
+    cd.route_exists(4, 20)
+
+    print("\n")
+
+    print("Cycles:")
     print(cd.graph.cycles())
+
+    print("\n")
+
+    print("Scheduled Points:")
+    cd.graph.scheduled_points(1, 13)
